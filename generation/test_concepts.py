@@ -1,4 +1,4 @@
-import argparse
+from custom import args, device
 import os
 import torch
 import torch.nn.functional as F
@@ -10,14 +10,6 @@ from modules import CBL
 from utils import eos_pooling
 import evaluate
 import time
-
-parser = argparse.ArgumentParser()
-
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-parser.add_argument("--dataset", type=str, default="SetFit/sst2")
-parser.add_argument("--batch_size", type=int, default=8)
-parser.add_argument("--max_length", type=int, default=350)
-parser.add_argument("--num_workers", type=int, default=0)
 
 
 class ClassificationDataset(torch.utils.data.Dataset):
@@ -43,14 +35,13 @@ def build_loaders(encoded_text, mode):
 
 if __name__ == "__main__":
     os.environ["TOKENIZERS_PARALLELISM"] = "false"
-    args = parser.parse_args()
 
     print("loading data...")
     test_dataset = load_dataset(args.dataset, split='test')
     print("test data len: ", len(test_dataset))
     print("tokenizing...")
-    config = LlamaConfig.from_pretrained('meta-llama/Meta-Llama-3-8B')
-    tokenizer = AutoTokenizer.from_pretrained('meta-llama/Meta-Llama-3-8B')
+    config = LlamaConfig.from_pretrained(args.model_id)
+    tokenizer = AutoTokenizer.from_pretrained(args.model_id)
     tokenizer.pad_token = tokenizer.eos_token
 
     if args.dataset == 'ag_news':
@@ -79,7 +70,7 @@ if __name__ == "__main__":
     print("preparing backbone")
     peft_path = "from_pretained_llama3_lora_cbm/" + args.dataset.replace('/', '_') + "/llama3"
     cbl_path = "from_pretained_llama3_lora_cbm/" + args.dataset.replace('/', '_') + "/cbl.pt"
-    preLM = LlamaModel.from_pretrained('meta-llama/Meta-Llama-3-8B', torch_dtype=torch.bfloat16).to(device)
+    preLM = LlamaModel.from_pretrained(args.model_id, torch_dtype=torch.bfloat16).to(device)
     preLM.load_adapter(peft_path)
     preLM.eval()
     cbl = CBL(config, len(concept_set), tokenizer).to(device)

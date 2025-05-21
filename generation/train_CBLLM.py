@@ -1,4 +1,4 @@
-import argparse
+from custom import args, device
 import os
 import torch
 import torch.nn.functional as F
@@ -11,13 +11,6 @@ from modules import CBL
 import time
 from utils import elastic_net_penalty, mean_pooling
 
-parser = argparse.ArgumentParser()
-
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-parser.add_argument("--dataset", type=str, default="SetFit/sst2")
-parser.add_argument("--batch_size", type=int, default=4)
-parser.add_argument("--max_length", type=int, default=350)
-parser.add_argument("--num_workers", type=int, default=0)
 
 class ClassificationDataset(torch.utils.data.Dataset):
     def __init__(self, encoded_text):
@@ -42,7 +35,6 @@ def build_loaders(encoded_text, mode):
 
 if __name__ == "__main__":
     os.environ["TOKENIZERS_PARALLELISM"] = "false"
-    args = parser.parse_args()
 
     print("loading data...")
     train_dataset = load_dataset(args.dataset, split='train')
@@ -72,8 +64,8 @@ if __name__ == "__main__":
     lora_config = LoraConfig(r=8, target_modules=["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj",
                                                   "down_proj"], bias="none", task_type=TaskType.FEATURE_EXTRACTION)
 
-    config = LlamaConfig.from_pretrained('meta-llama/Meta-Llama-3-8B')
-    tokenizer = AutoTokenizer.from_pretrained('meta-llama/Meta-Llama-3-8B')
+    config = LlamaConfig.from_pretrained(args.model_id)
+    tokenizer = AutoTokenizer.from_pretrained(args.model_id)
     tokenizer.pad_token = tokenizer.eos_token
 
     encoded_train_dataset = train_dataset.map(
@@ -107,7 +99,7 @@ if __name__ == "__main__":
 
 
     print("preparing backbone")
-    preLM = LlamaModel.from_pretrained('meta-llama/Meta-Llama-3-8B', torch_dtype=torch.bfloat16).to(device)
+    preLM = LlamaModel.from_pretrained(args.model_id, torch_dtype=torch.bfloat16).to(device)
     preLM = get_peft_model(preLM, lora_config)
     preLM.print_trainable_parameters()
     lora_layers = filter(lambda p: p.requires_grad, preLM.parameters())

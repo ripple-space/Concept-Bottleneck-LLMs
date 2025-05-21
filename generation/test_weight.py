@@ -1,4 +1,4 @@
-import argparse
+from custom import args, device
 import os
 import torch
 import torch.nn.functional as F
@@ -9,17 +9,11 @@ from transformers import LlamaConfig, LlamaModel, AutoTokenizer
 from modules import CBL
 
 
-parser = argparse.ArgumentParser()
-
-device = torch.device("cpu")
-parser.add_argument("--dataset", type=str, default="SetFit/sst2")
-
 if __name__ == "__main__":
     os.environ["TOKENIZERS_PARALLELISM"] = "false"
-    args = parser.parse_args()
 
-    config = LlamaConfig.from_pretrained('meta-llama/Meta-Llama-3-8B')
-    tokenizer = AutoTokenizer.from_pretrained('meta-llama/Meta-Llama-3-8B')
+    config = LlamaConfig.from_pretrained(args.model_id)
+    tokenizer = AutoTokenizer.from_pretrained(args.model_id)
     tokenizer.pad_token = tokenizer.eos_token
 
     concept_set = CFG.concepts_from_labels[args.dataset]
@@ -28,7 +22,7 @@ if __name__ == "__main__":
     print("preparing backbone")
     peft_path = "from_pretained_llama3_lora_cbm/" + args.dataset.replace('/', '_') + "/llama3"
     cbl_path = "from_pretained_llama3_lora_cbm/" + args.dataset.replace('/', '_') + "/cbl.pt"
-    preLM = LlamaModel.from_pretrained('meta-llama/Meta-Llama-3-8B', torch_dtype=torch.bfloat16).to(device)
+    preLM = LlamaModel.from_pretrained(args.model_id, torch_dtype=torch.bfloat16).to(device)
     preLM.load_adapter(peft_path)
     preLM.eval()
     cbl = CBL(config, len(concept_set), tokenizer).to(device)

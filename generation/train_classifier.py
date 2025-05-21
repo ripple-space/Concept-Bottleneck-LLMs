@@ -1,4 +1,4 @@
-import argparse
+from custom import args, device
 import os
 import gc
 import torch
@@ -10,14 +10,6 @@ import config as CFG
 from modules import Roberta_classifier
 from langdetect import detect
 import copy
-
-parser = argparse.ArgumentParser()
-
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-parser.add_argument("--dataset", type=str, default="SetFit/sst2")
-parser.add_argument("--batch_size", type=int, default=16)
-parser.add_argument("--max_length", type=int, default=100)
-parser.add_argument("--num_workers", type=int, default=0)
 
 
 class ClassificationDataset(torch.utils.data.Dataset):
@@ -42,7 +34,6 @@ def build_loaders(encode_roberta, mode):
 
 if __name__ == "__main__":
     os.environ["TOKENIZERS_PARALLELISM"] = "false"
-    args = parser.parse_args()
 
     print("loading data...")
     train_dataset = load_dataset(args.dataset, split='train')
