@@ -1,4 +1,4 @@
-from custom import args, device
+from custom import args, device, get_checkpoint_path
 import os
 import torch
 import torch.nn.functional as F
@@ -20,8 +20,8 @@ if __name__ == "__main__":
     print("concept len: ", len(concept_set))
 
     print("preparing backbone")
-    peft_path = "from_pretained_llama3_lora_cbm/" + args.dataset.replace('/', '_') + "/llama3"
-    cbl_path = "from_pretained_llama3_lora_cbm/" + args.dataset.replace('/', '_') + "/cbl.pt"
+    peft_path = get_checkpoint_path("from_pretained_llama3_lora_cbm/" + args.dataset.replace('/', '_') + "/llama3", args.epoch_index)
+    cbl_path = get_checkpoint_path("from_pretained_llama3_lora_cbm/" + args.dataset.replace('/', '_') + "/cbl", args.epoch_index)
     preLM = LlamaModel.from_pretrained(args.model_id, torch_dtype=torch.bfloat16).to(device)
     preLM.load_adapter(peft_path)
     preLM.eval()

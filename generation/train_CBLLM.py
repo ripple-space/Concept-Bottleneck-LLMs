@@ -1,4 +1,4 @@
-from custom import args, device
+from custom import args, device, get_checkpoint_path
 import os
 import torch
 import torch.nn.functional as F
