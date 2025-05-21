@@ -8,7 +8,7 @@ from transformers import RobertaTokenizerFast, RobertaModel, GPT2TokenizerFast, 
 from datasets import load_dataset, concatenate_datasets
 import config as CFG
 from modules import Roberta_classifier
-from langdetect import detect
+# from langdetect import detect
 import copy
 
 
