@@ -44,6 +44,7 @@ if __name__ == "__main__":
         intervention_value = 100
     pred = []
     text = []
+    references = []
     acc = evaluate.load("accuracy")
     for i in range(100 // len(concept_set)):
         print("example", str(i), end="\r")
@@ -61,8 +62,9 @@ if __name__ == "__main__":
                 roberta_input = {"input_ids": roberta_text_ids, "attention_mask": torch.tensor([[1]*roberta_text_ids.shape[1]]).to(device)}
                 logits = classifier(roberta_input)
                 pred.append(logits)
+                references.append(j)
     pred = torch.cat(pred, dim=0).detach().cpu()
     pred = np.argmax(pred.numpy(), axis=-1)
-    acc.add_batch(predictions=pred, references=list(range(len(concept_set)))*(100 // len(concept_set)))
+    acc.add_batch(predictions=pred, references=references)
 
     print(acc.compute())
