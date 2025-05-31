@@ -36,11 +36,19 @@ if __name__ == "__main__":
     input_ids = torch.tensor([tokenizer.encode("")]).to(device)
 
     print("generation...")
-    v = [0] * len(concept_set)
-    # For SST2 and Yelp, intervene v[0] to a large value will give you negative movie or Yelp review
-    # For AGnews, there are four classes World news, Sport news, Business news and Tech news, intervene v[0], ..., v[3] accordingly will give you the sentences related to the concepts
-    v[0] = 100
-    with torch.no_grad():
-        text_ids, concept_activation = cbl.generate(input_ids, preLM, intervene=v)
-    print(tokenizer.decode(text_ids[0]))
-    # print(concept_activation)
+    for j in range(len(concept_set)):
+        v = [0] * len(concept_set)
+        # For SST2 and Yelp, intervene v[0] to a large value will give you negative movie or Yelp review
+        # For AGnews, there are four classes World news, Sport news, Business news and Tech news, intervene v[0], ..., v[3] accordingly will give you the sentences related to the concepts
+        j = j if args.intervention_class is None else args.intervention_class
+        v[j] = args.intervention_value
+        v = None if args.intervention_value is None else v
+        
+        print()
+        print(concept_set[j])
+        print(f"intervention_value={v}")
+        
+        with torch.no_grad():
+            text_ids, concept_activation = cbl.generate(input_ids, preLM, intervene=v)
+        print(tokenizer.decode(text_ids[0]))
+        # print(concept_activation)

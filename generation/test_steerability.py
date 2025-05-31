@@ -51,7 +51,9 @@ if __name__ == "__main__":
             input_ids = torch.tensor([tokenizer.encode("")]).to(device)
             for j in range(len(concept_set)):
                 v = [0] * len(concept_set)
-                v[j] = intervention_value
+                j = j if args.intervention_class is None else args.intervention_class
+                v[j] = args.intervention_value
+                v = None if args.intervention_value is None else v
                 text_ids, _ = cbl.generate(input_ids, preLM, intervene=v)
                 decoded_text_ids = tokenizer.decode(text_ids[0][~torch.isin(text_ids[0], torch.tensor([128000, 128001]).to(device))])
                 text.append(decoded_text_ids)

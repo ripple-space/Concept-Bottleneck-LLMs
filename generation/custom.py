@@ -17,6 +17,8 @@ parser.add_argument("--max_length", type=int, default=350)
 parser.add_argument("--num_workers", type=int, default=0)
 parser.add_argument("--device", type=str, default=device)
 parser.add_argument("--epoch_index", type=int, default=-1)
+parser.add_argument("--intervention_class", type=int, default=None)
+parser.add_argument("--intervention_value", type=int, default=None)
 args = parser.parse_args()
 
 device = torch.device(args.device)

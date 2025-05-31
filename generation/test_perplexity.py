@@ -41,7 +41,11 @@ if __name__ == "__main__":
     for i in range(100):
         print("example", str(i), end="\r")
         with torch.no_grad():
-            text_ids, _ = cbl.generate(input_ids, preLM)
+            v = [0] * len(concept_set)
+            j = args.intervention_class
+            v[j] = args.intervention_value
+            v = None if args.intervention_value is None else v
+            text_ids, _ = cbl.generate(input_ids, preLM, intervene=v)
             pred.append(tokenizer.decode(text_ids[0]))
     perplexity.add_batch(predictions=pred)
 
