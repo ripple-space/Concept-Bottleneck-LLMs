@@ -39,6 +39,10 @@ def cos_sim_cubed(cbl_features, target):
     sim = torch.sum(cbl_features*target, dim=-1)
     return sim.mean()
 
+def bce(cbl_features, target, weight=None):
+    import torch.nn.functional as F
+    return F.binary_cross_entropy_with_logits(cbl_features, target, weight=weight)
+
 def normalize(x, d=-1, mean=None, std=None):
     if mean is not None and std is not None:
         x_mean = mean

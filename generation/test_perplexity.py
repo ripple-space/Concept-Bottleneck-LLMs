@@ -42,7 +42,7 @@ if __name__ == "__main__":
         print("example", str(i), end="\r")
         with torch.no_grad():
             v = [0] * len(concept_set)
-            j = args.intervention_class
+            j = 0 if args.intervention_class is None else args.intervention_class
             v[j] = args.intervention_value
             v = None if args.intervention_value is None else v
             text_ids, _ = cbl.generate(input_ids, preLM, intervene=v)

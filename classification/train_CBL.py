@@ -8,7 +8,7 @@ from transformers import RobertaTokenizerFast, RobertaModel, GPT2TokenizerFast, 
 from datasets import load_dataset, concatenate_datasets
 import config as CFG
 from modules import CBL, RobertaCBL, GPT2CBL
-from utils import cos_sim_cubed, get_labels, eos_pooling
+from utils import cos_sim_cubed, get_labels, eos_pooling, bce
 import time
 
 parser = argparse.ArgumentParser()
@@ -25,7 +25,14 @@ parser.add_argument("--batch_size", type=int, default=16)
 parser.add_argument("--max_length", type=int, default=512)
 parser.add_argument("--num_workers", type=int, default=0)
 parser.add_argument("--dropout", type=float, default=0.1)
+parser.add_argument("--loss_fn", type=str, default="cos")
 
+
+def loss_fn(pred, true):
+    if args.loss_fn = "cos":
+        return -cos_sim_cubed(pred, true)
+    if args.loss_fn = "bce":
+        return bce(pred, true)
 
 class ClassificationDataset(torch.utils.data.Dataset):
     def __init__(self, encode_roberta, s):
@@ -233,7 +240,7 @@ if __name__ == "__main__":
                 cbl_features = cbl(LM_features)
             else:
                 cbl_features = backbone_cbl(batch_text)
-            loss = -cos_sim_cubed(cbl_features, batch_sim)
+            loss = loss_fn(cbl_features, batch_sim)
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()

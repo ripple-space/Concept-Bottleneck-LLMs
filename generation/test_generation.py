@@ -33,7 +33,7 @@ if __name__ == "__main__":
     cbl.load_state_dict(torch.load(cbl_path, map_location=device))
     cbl.eval()
 
-    input_ids = torch.tensor([tokenizer.encode("")]).to(device)
+    input_ids = torch.tensor([tokenizer.encode("" + args.prompt)]).to(device)
 
     print("generation...")
     for j in range(len(concept_set)):
