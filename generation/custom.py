@@ -30,3 +30,16 @@ def get_checkpoint_path(path, epoch_index=-1):
     paths = sorted(paths, key=lambda x: int(x.split("_")[-1].split(".")[0]))
     print(f"Loading from checkpoint: {paths[epoch_index]}")
     return paths[epoch_index]
+
+# Recursively set chmod 777 (read, write, and execute for all users) for all files and directories
+def safe_chmod(path, mode):
+    try:
+        os.chmod(path, mode)
+    except PermissionError:
+        print(f"Permission denied: {path}")        
+def chmod_recursive(path, mode=0o777):
+    for root, dirs, files in os.walk(path, topdown=False):
+        for name in files + dirs:
+            safe_chmod(os.path.join(root, name), mode)
+    safe_chmod(path, mode)
+chmod_recursive(cache_path)
