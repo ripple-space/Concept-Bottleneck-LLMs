@@ -39,6 +39,13 @@ if __name__ == "__main__":
     train_dataset = load_dataset(args.dataset, split='train')
     print("tokenizing...")
 
+    if args.dataset != 'SetFit/sst2':
+        d_list = []
+        for i in range(CFG.class_num[args.dataset]):
+            d_list.append(
+                train_dataset.filter(lambda e: e['label'] == i).select(range(args.n_train_samples // CFG.class_num[args.dataset])))
+        train_dataset = concatenate_datasets(d_list)
+
     if args.dataset == 'ag_news':
         def replace_bad_string(example):
             example["text"] = example["text"].replace("#36;", "")

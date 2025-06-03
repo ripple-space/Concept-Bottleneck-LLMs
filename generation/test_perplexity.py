@@ -38,7 +38,7 @@ if __name__ == "__main__":
     pred = []
     perplexity = evaluate.load("perplexity", module_type="metric")
     input_ids = torch.tensor([tokenizer.encode("")]).to(device)
-    for i in range(100):
+    for i in range(args.n_eval_samples):
         print("example", str(i), end="\r")
         with torch.no_grad():
             v = [0] * len(concept_set)

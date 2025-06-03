@@ -46,7 +46,7 @@ if __name__ == "__main__":
     text = []
     references = []
     acc = evaluate.load("accuracy")
-    for i in range(100 // len(concept_set)):
+    for i in range(args.n_eval_samples // len(concept_set)):
         print("example", str(i), end="\r")
         with torch.no_grad():
             input_ids = torch.tensor([tokenizer.encode("")]).to(device)

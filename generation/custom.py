@@ -20,6 +20,8 @@ parser.add_argument("--epoch_index", type=int, default=-1)
 parser.add_argument("--intervention_class", type=int, default=None)
 parser.add_argument("--intervention_value", type=float, default=None)
 parser.add_argument("--prompt", type=str, default="")
+parser.add_argument("--n_train_samples", type=int, default=100000)
+parser.add_argument("--n_eval_samples", type=int, default=100)
 args = parser.parse_args()
 
 device = torch.device(args.device)

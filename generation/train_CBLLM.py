@@ -45,7 +45,7 @@ if __name__ == "__main__":
         d_list = []
         for i in range(CFG.class_num[args.dataset]):
             d_list.append(
-                train_dataset.filter(lambda e: e['label'] == i).select(range(100000 // CFG.class_num[args.dataset])))
+                train_dataset.filter(lambda e: e['label'] == i).select(range(args.n_train_samples // CFG.class_num[args.dataset])))
         train_dataset = concatenate_datasets(d_list)
 
     if args.dataset == 'ag_news':
