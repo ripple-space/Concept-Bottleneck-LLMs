@@ -45,3 +45,20 @@ def chmod_recursive(path, mode=0o777):
             safe_chmod(os.path.join(root, name), mode)
     safe_chmod(path, mode)
 chmod_recursive(cache_path)
+
+import torch
+import numpy as np
+import random
+import os
+
+seed = 42
+torch.manual_seed(seed)
+torch.cuda.manual_seed(seed)
+torch.cuda.manual_seed_all(seed)
+
+np.random.seed(seed)
+random.seed(seed)
+os.environ['PYTHONHASHSEED'] = str(seed)
+
+torch.backends.cudnn.deterministic = True
+torch.backends.cudnn.benchmark = False
