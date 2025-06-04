@@ -19,7 +19,7 @@ We recommend using:
 After cloning the repo, install dependencies:
 ```bash
 cd classification
-pip install -r requirements.txt
+pip install -r requirements.txt```
 
 Note: We updated torchvision in requirements.txt from `0.17.0` to `0.19.0` for compatibility.
 
@@ -28,7 +28,7 @@ Download the finetuned CB-LLM checkpoints from HuggingFace:
 git lfs install
 git clone https://huggingface.co/cesun/cbllm-classification temp_repo
 mv temp_repo/mpnet_acs .
-rm -rf temp_repo
+rm -rf temp_repo```
 
 ---
 
