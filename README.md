@@ -1,6 +1,6 @@
 # Concept-Bottleneck-LLM
 
-This is the extended and reproduced implementation of the paper: [Concept Bottleneck Large Language Models](https://arxiv.org/abs/2402.06634).  
+This is the extended and reproduced implementation of the paper: [Concept Bottleneck Large Language Models](https://arxiv.org/abs/2412.07992).  
 We faithfully reproduce the CB-LLM classification pipeline and introduce two additional contributions:
 - **NEC (Number of Effective Concepts) Analysis**: Study the effect of sparsity on performance.
 - **BCE-trained Concept Bottleneck Layer**: Explore alternative concept training objectives.
