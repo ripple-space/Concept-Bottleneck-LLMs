@@ -38,7 +38,9 @@ rm -rf temp_repo
 
 ###  Automatic Concept Scoring (ACS)
 To generate concept scores for a dataset, run:
-```python get_concept_labels.py```
+```bash
+python get_concept_labels.py
+```
 
 This will generate the concept scores for the SST2 dataset using our predefined concept set, and store the scores under `mpnet_acs/SetFit_sst2/`. Set the argument `--dataset ag_news`, `--dataset yelp_polarity`, or `--dataset dbpedia_14` to switch the dataset.
 
@@ -50,7 +52,9 @@ This will generate the concept scores for the SST2 dataset using our predefined 
 
 ### Train the Concept Bottleneck Layer (CBL)
 To train the CBL, run
-```python train_CBL.py --automatic_concept_correction```
+```bash
+python train_CBL.py --automatic_concept_correction
+```
 
 This will train the CBL with Automatic Concept Correction for the SST2 dataset, and store the model under `mpnet_acs/SetFit_sst2/roberta_cbm/`. To disable Automatic Concept Correction, remove the given argument. Set the argument `--backbone gpt2` to switch the backbone from roberta to gpt2. Set the argument `--dataset ag_news`, `--dataset yelp_polarity`, or `--dataset dbpedia_14` to switch the dataset.
 
@@ -59,7 +63,9 @@ Checkpoints are saved automatically to avoid losing progress if your connection 
 
 ### Train the Final Predictor
 To train the final predictor, run:
-```python train_FL.py --cbl_path mpnet_acs/SetFit_sst2/roberta_cbm/cbl_acc.pt```
+```bash
+python train_FL.py --cbl_path mpnet_acs/SetFit_sst2/roberta_cbm/cbl_acc.pt
+```
 
 This will train the linear predictor of the CBL for the SST2 dataset, and store the linear layer in the same directory.
 Please change the argument `--cbl_path` accordingly for other settings.
@@ -68,8 +74,71 @@ For example, without Automatic Concept Correction, the model will be saved as `c
 **Update:**
 The code now supports more flexible backbone detection (e.g. both `roberta` and `gpt2` in string).
 
+### Train the Baseline Black-box Model
+To train the baseline standard black-box model, run
+```bash
+python finetune_black_box.py
 
+```
+This will train the black-box (non-interpretable) model for the SST2 dataset, and store the model under `baseline_models/roberta/`.
+Set the argument `--backbone gpt2` to switch backbone or `--dataset ag_news`, `--dataset yelp_polarity`, or `--dataset dbpedia_14` to switch the dataset.
 
+**Update:**
+Reduced batch_size for large datasets and added checkpoints.
+
+### Testing
+#### Test CB-LLM (classification)
+To test the accuracy of the CB-LLM, run
+```bash
+python test_CBLLM.py --cbl_path mpnet_acs/SetFit_sst2/roberta_cbm/cbl_acc.pt
+```
+Please change the argument `--cbl_path` accordingly if using other settings. For example, w/o Automatic Concept Correction will be save as `cbl.pt`. Add the `--sparse` argument for testing with the sparse final layer.
+#### Test the baseline black-box model
+To test the accuracy of the baseline standard black-box model, run
+```bash
+python test_black_box.py --model_path baseline_models/roberta/backbone_finetuned_sst2.pt
+```
+Set the argument `--dataset yelp_polarity`, `--dataset ag_news`, or `--dataset dbpedia_14` to switch the dataset. Please change the argument `--model_path` accordingly if using other settings.
+
+### Generate Explanations from CB-LLM
+To visualize the neurons in CB-LLM (task 1 in our paper), run
+```bash
+python print_concept_activations.py --cbl_path mpnet_acs/SetFit_sst2/roberta_cbm/cbl_acc.pt
+```
+This will generate 5 most related samples for each neuron explanation. Please change the argument `--cbl_path` accordingly if using other settings.
+
+To get the explanations provided by CB-LLM (task 2 in our paper), run
+```bash
+python print_concept_contributions.py --cbl_path mpnet_acs/SetFit_sst2/roberta_cbm/cbl_acc.pt
+```
+This will generate 5 explanations for each sample in the dataset. Please change the argument `--cbl_path` accordingly if using other settings.
 
 ## 🧪 Additional Experiments
 
+### NEC (Number of Effective Concepts) Analysis
+To train and evaluate at various sparsity levels, run:
+```bash
+python train_FL_nec.py --cbl_path mpnet_acs/SetFit_sst2/roberta_cbm/cbl_acc.pt
+```
+
+This will train and evaluate the final predictor with different levels of sparsity (effective concepts), saving each configuration's weights and accuracy logs.
+**Details:**
+
+Uses `weight_truncation` in `utils.py` and updated `glm_saga` in `glm_saga/elasticnet.py`.
+Trains and saves model at `measure_level = (5, 10, ... 100)` effective concepts.
+Stores results under `.../<backbone>_nec/`.
+
+#### Test NEC accuracy for CB-LLM
+```bash
+python test_CBLLM.py --cbl_path mpnet_acs/SetFit_sst2/roberta_cbm_nec/cbl_acc.pt --NEC 5
+```
+Evaluates test accuracy at each NEC level for a given CB-LLM model.
+
+#### Test NEC accuracy for Black-box
+```bash
+python test_black_box_nec.py --model_path baseline_models/roberta/backbone_finetuned_sst2.pt
+
+```
+Evaluates NEC-constrained accuracy for black-box models, for comparison with CB-LLM.
+
+## Key Results
