@@ -1,11 +1,11 @@
-# Concept-Bottleneck-LLM
+# Concept-Bottleneck-LLMs
 
 This is the extended and reproduced implementation of the paper: [Concept Bottleneck Large Language Models](https://arxiv.org/abs/2412.07992).  
 We faithfully reproduce the CB-LLM classification pipeline and introduce two additional contributions:
 - **NEC (Number of Effective Concepts) Analysis**: A new interpretability and sparsity evaluation inspired by the VLG-CBM paper, allowing us to study model efficiency under controlled neuron usage.
 - **BCE-trained Concept Bottleneck Layer**: Support for training the concept bottleneck layer with binary cross-entropy (BCE) loss as an alternative to mean squared error.
 
-This repo is adapted to run under limited GPU resources and includes updates to improve efficiency and compatibility.
+This repo is adapted to run under limited GPU resources and includes updates to improve efficiency and compatibility. Detailed introduction can be found in our [Medium](https://medium.com/@yi.lien.elaine/reproduction-of-cb-llms-22e7c3130ddf).
 
 ---
 
