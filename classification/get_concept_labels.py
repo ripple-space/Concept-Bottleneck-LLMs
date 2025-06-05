@@ -39,6 +39,8 @@ def build_sim_loaders(encode_sim):
     dataset = SimDataset(encode_sim)
     if args.concept_text_sim_model == 'angle':
         batch_size = 8
+    elif args.dataset in ['dbpedia_14','yelp_polarity']: ##make the batch_size smaller
+        batch_size = 64
     else:
         batch_size = 256
     dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, num_workers=args.num_workers, shuffle=False)
@@ -61,6 +63,7 @@ if args.concept_text_sim_model == 'mpnet':
     print("tokenizing and preparing mpnet")
     tokenizer_sim = AutoTokenizer.from_pretrained('sentence-transformers/all-mpnet-base-v2')
     sim_model = AutoModel.from_pretrained('sentence-transformers/all-mpnet-base-v2').to(device)
+    sim_model = sim_model.half().to(device)  ## cast model weights to float16
     sim_model.eval()
 elif args.concept_text_sim_model == 'simcse':
     tokenizer_sim = AutoTokenizer.from_pretrained("princeton-nlp/sup-simcse-bert-base-uncased")
@@ -81,11 +84,23 @@ elif args.concept_text_sim_model == 'angle':
 else:
     raise Exception("concept-text sim model should be mpnet, simcse or angle")
 
-encoded_sim_train_dataset = train_dataset.map(
-    lambda e: tokenizer_sim(e[CFG.example_name[args.dataset]], padding=True, truncation=True,
+
+# set smaller batch_size for large datasets
+if args.dataset in ['dbpedia_14', 'yelp_polarity']:
+    encoded_sim_train_dataset = train_dataset.map(
+    lambda e: tokenizer_sim(e[CFG.example_name[args.dataset]], padding="max_length", truncation=True,
                             max_length=args.max_length), batched=True,
-    batch_size=len(train_dataset))
-encoded_sim_train_dataset = encoded_sim_train_dataset.remove_columns([CFG.example_name[args.dataset]])
+    batch_size=1_000,            # or 2_000, 5_000… whatever your RAM can handle
+    num_proc=os.cpu_count(),     # parallelize across your cores
+    remove_columns=[CFG.example_name[args.dataset]])  # drop text column immediately
+    encoded_sim_train_dataset.set_format(type="torch",
+                                     columns=["input_ids","attention_mask"])
+else:
+    encoded_sim_train_dataset = train_dataset.map(
+        lambda e: tokenizer_sim(e[CFG.example_name[args.dataset]], padding=True, truncation=True,
+                            max_length=args.max_length), batched=True,
+        batch_size=len(train_dataset))
+    encoded_sim_train_dataset = encoded_sim_train_dataset.remove_columns([CFG.example_name[args.dataset]])
 if args.dataset == 'SetFit/sst2':
     encoded_sim_train_dataset = encoded_sim_train_dataset.remove_columns(['label_text'])
 if args.dataset == 'dbpedia_14':
@@ -116,6 +131,7 @@ with torch.no_grad():
     if args.concept_text_sim_model == 'mpnet':
         concept_features = sim_model(input_ids=encoded_c["input_ids"], attention_mask=encoded_c["attention_mask"])
         concept_features = mean_pooling(concept_features, encoded_c["attention_mask"])
+        concept_features = concept_features.half() # cast precomputed concepts to float16
     elif args.concept_text_sim_model == 'simcse':
         concept_features = sim_model(input_ids=encoded_c["input_ids"], attention_mask=encoded_c["attention_mask"], output_hidden_states=True, return_dict=True).pooler_output
     elif args.concept_text_sim_model == 'angle':
@@ -141,6 +157,7 @@ for i, batch_sim in enumerate(train_sim_loader):
             raise Exception("concept-text sim model should be mpnet, simcse or angle")
         text_features = F.normalize(text_features, p=2, dim=1)
     train_sim.append(text_features @ concept_features.T)
+    text_features = text_features.half() # cast text feature to float16
 train_similarity = torch.cat(train_sim, dim=0).cpu().detach().numpy()
 end = time.time()
 print("time of concept scoring:", (end-start)/3600, "hours")
