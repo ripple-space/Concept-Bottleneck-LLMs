@@ -121,3 +121,12 @@ def dbpedia_labels(n):
         return 12
     else:
         return 13
+
+#add weight_truncation for NEC
+def weight_truncation(weight: torch.Tensor, sparsity: float):
+    numel = weight.numel()
+    num_zeros = int((1 - sparsity) * numel)
+    threshold = torch.sort(weight.flatten().abs())[0][num_zeros]
+    sparse_weight = weight.clone().detach()
+    sparse_weight[weight.abs() < threshold] = 0
+    return sparse_weight
