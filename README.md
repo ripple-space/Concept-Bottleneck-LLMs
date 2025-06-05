@@ -2,8 +2,8 @@
 
 This is the extended and reproduced implementation of the paper: [Concept Bottleneck Large Language Models](https://arxiv.org/abs/2412.07992).  
 We faithfully reproduce the CB-LLM classification pipeline and introduce two additional contributions:
-- **NEC (Number of Effective Concepts) Analysis**: Study the effect of sparsity on performance.
-- **BCE-trained Concept Bottleneck Layer**: Explore alternative concept training objectives.
+- **NEC (Number of Effective Concepts) Analysis**: A new interpretability and sparsity evaluation inspired by the VLG-CBM paper, allowing us to study model efficiency under controlled neuron usage.
+- **BCE-trained Concept Bottleneck Layer**: Support for training the concept bottleneck layer with binary cross-entropy (BCE) loss as an alternative to mean squared error.
 
 This repo is adapted to run under limited GPU resources and includes updates to improve efficiency and compatibility.
 
@@ -133,23 +133,32 @@ This will store the sankey plot in `/classification/mpnet_acs/SetFit_sst2/robert
 ## 🧪 Additional Experiments
 
 ### NEC (Number of Effective Concepts) Analysis
+Our NEC analysis is inspired by the VLG-CBM paper ([VLG-CBM, arXiv:2048.01423](https://arxiv.org/abs/2408.01432)), which introduced NEC as a metric to evaluate model interpretability and efficiency under sparsity constraints. Here, we extend NEC to text classification with concept bottleneck models.
+
+**What is NEC?**  
+The Number of Effective Concepts (NEC) measures the average number of active concepts (neurons) used for each prediction.
+- Smaller NEC means the model makes decisions based on fewer, more interpretable concepts.
+- This analysis helps verify that high accuracy is not simply due to random or redundant concept usage.
+- NEC also enables fair comparison between models with different sparsity levels.
+
+**Our goals with NEC:**  
+- Evaluate whether NEC is meaningful and useful for text classification.
+- Determine if high accuracy can be achieved with fewer effective concepts.
+- Show how accuracy changes under different NEC constraints.
+
 To train and evaluate at various sparsity levels, run:
 ```bash
 python train_FL_nec.py --cbl_path mpnet_acs/SetFit_sst2/roberta_cbm/cbl_acc.pt
 ```
 
 This will train and evaluate the final predictor with different levels of sparsity (effective concepts), saving each configuration's weights and accuracy logs.
+
 **Details:**
 
 Use `weight_truncation` in `utils.py` and updated `glm_saga` in `glm_saga/elasticnet.py`.
 Trains and saves model at `measure_level = (5, 10, ... 100)` effective concepts.
 Stores results under `.../<backbone>_nec/`.
 
-#### Test NEC accuracy for CB-LLM
-```bash
-python test_CBLLM.py --cbl_path mpnet_acs/SetFit_sst2/roberta_cbm_nec/cbl_acc.pt --NEC 5
-```
-Evaluates test accuracy at each NEC level for a given CB-LLM model.
 
 #### Test NEC accuracy for Black-box
 ```bash
