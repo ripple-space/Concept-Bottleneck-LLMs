@@ -98,9 +98,15 @@ if __name__ == "__main__":
     else:
         raise Exception("backbone should be roberta or gpt2")
 
-    encoded_train_dataset = train_dataset.map(
+    # set smaller batch_size for large datasets
+    if args.dataset == 'SetFit/sst2':
+        encoded_train_dataset = train_dataset.map(
         lambda e: tokenizer(e[CFG.example_name[args.dataset]], padding=True, truncation=True, max_length=args.max_length), batched=True,
         batch_size=len(train_dataset))
+    else:
+        encoded_train_dataset = train_dataset.map(
+        lambda e: tokenizer([CFG.example_name[args.dataset]], padding="max_length", truncation=True, max_length=args.max_length),batched=True,
+        batch_size=args.batch_size, num_proc=os.cpu_count())
     encoded_train_dataset = encoded_train_dataset.remove_columns([CFG.example_name[args.dataset]])
     if args.dataset == 'SetFit/sst2':
         encoded_train_dataset = encoded_train_dataset.remove_columns(['label_text'])
@@ -216,18 +222,44 @@ if __name__ == "__main__":
         epochs = 10
     else:
         epochs = CFG.cbl_epochs[args.dataset]
-    for e in range(epochs):
-        print("Epoch ", e+1, ":")
+
+    # Add checkpoints
+    checkpoint_interval = 10000  # Save every 10,000 batches
+    last_checkpoint_path = None
+    resume_path = None
+    resume_epoch, resume_batch = 0, 0
+    
+    ckpts = glob(os.path.join(prefix, f"{model_name}_epoch*_batch*.pt"))
+    if ckpts:
+        def extract_key(f):
+            m = re.search(r'epoch(\d+)_batch(\d+)', f)
+            return (int(m.group(1)), int(m.group(2))) if m else (0, 0)
+        resume_path = max(ckpts, key=extract_key)
+        resume_epoch, resume_batch = extract_key(resume_path)
+        print(f"Resuming from: {resume_path}")
+
+        map_location = device  # Ensure checkpoint is loaded to correct device
+        checkpoint = torch.load(resume_path, map_location=map_location)
+        if args.tune_cbl_only:
+            cbl.load_state_dict(checkpoint['model_state_dict'])
+        else:
+            backbone_cbl.load_state_dict(checkpoint['model_state_dict'])
+        optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+
+    for e in range(resume_epoch, epochs):
         if args.tune_cbl_only:
             cbl.train()
         else:
             backbone_cbl.train()
         training_loss = []
         for i, batch in enumerate(train_loader):
+            if e == resume_epoch and i <= resume_batch:
+                continue  # Skip previously completed batches
+
             batch_text, batch_sim = batch[0], batch[1]
             batch_text = {k: v.to(device) for k, v in batch_text.items()}
             batch_sim = batch_sim.to(device)
-
+            
             if args.tune_cbl_only:
                 with torch.no_grad():
                     LM_features = preLM(input_ids=batch_text["input_ids"], attention_mask=batch_text["attention_mask"]).last_hidden_state
@@ -235,17 +267,39 @@ if __name__ == "__main__":
                         LM_features = LM_features[:, 0, :]
                     elif args.backbone == 'gpt2':
                         LM_features = eos_pooling(LM_features, batch_text["attention_mask"])
-                    else:
-                        raise Exception("backbone should be roberta or gpt2")
                 cbl_features = cbl(LM_features)
             else:
                 cbl_features = backbone_cbl(batch_text)
-            loss = loss_fn(cbl_features, batch_sim)
+    
+            loss = -cos_sim_cubed(cbl_features, batch_sim)
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-            print("batch ", str(i), " loss: ", loss.detach().cpu().numpy(), end="\r")
             training_loss.append(loss.detach().cpu().numpy())
+            print("batch ", str(i), " loss: ", loss.detach().cpu().numpy(), end="\r")
+    
+            # Save checkpoint
+            if (i + 1) % checkpoint_interval == 0:
+                save_path = os.path.join(prefix, f"{model_name}_epoch{e+1}_batch{i+1}.pt")
+                temp_path = save_path + ".tmp"
+            
+                torch.save({
+                    'epoch': e,
+                    'batch': i,
+                    'model_state_dict': cbl.state_dict() if args.tune_cbl_only else backbone_cbl.state_dict(),
+                    'optimizer_state_dict': optimizer.state_dict(),
+                }, temp_path)
+            
+                os.rename(temp_path, save_path)
+                print(f"\nCheckpoint saved at batch {i+1} to {save_path}")
+
+                # Remove previous checkpoint
+                if last_checkpoint_path and os.path.exists(last_checkpoint_path):
+                    os.remove(last_checkpoint_path)
+                    print(f"Deleted previous checkpoint: {last_checkpoint_path}")
+            
+                last_checkpoint_path = save_path
+        
         avg_training_loss = sum(training_loss)/len(training_loss)
         print("training loss: ", avg_training_loss)
 
