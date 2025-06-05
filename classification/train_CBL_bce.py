@@ -177,6 +177,11 @@ if __name__ == "__main__":
         print("time of trainng intervention:", (end - start) / 3600, "hours")
 
     print("creating loader...")
+    targets = torch.tensor(train_similarity)
+    pos_counts = targets.sum(dim=0)
+    neg_counts = (1 - targets).sum(dim=0)
+    pos_weight = neg_counts / (pos_counts + 1e-9)
+    pos_weight = pos_weight.to(device)
     train_loader = build_loaders(encoded_train_dataset, train_similarity, mode="train")
     if args.dataset == 'SetFit/sst2':
         val_loader = build_loaders(encoded_val_dataset, val_similarity, mode="valid")
@@ -276,7 +281,7 @@ if __name__ == "__main__":
             else:
                 cbl_features = backbone_cbl(batch_text)
     
-            loss = F.binary_cross_entropy_with_logits(cbl_features, batch_sim)
+            loss = F.binary_cross_entropy_with_logits(cbl_features, batch_sim, pos_weight=pos_weight)
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
@@ -330,7 +335,7 @@ if __name__ == "__main__":
                         cbl_features = cbl(LM_features)
                     else:
                         cbl_features = backbone_cbl(batch_text)
-                    loss = F.binary_cross_entropy_with_logits(cbl_features, batch_sim)
+                    loss = F.binary_cross_entropy_with_logits(cbl_features, batch_sim, pos_weight=pos_weight)
                     val_loss.append(loss.detach().cpu().numpy())
             avg_val_loss = sum(val_loss)/len(val_loss)
             print("val loss: ", avg_val_loss)

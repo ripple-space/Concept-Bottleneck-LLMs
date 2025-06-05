@@ -179,5 +179,39 @@ After this, you can follow the step in 'Train the Final Predictor' above to get 
 
 <br>
 
+## 📊 Part II: CB-LLM (Generation)
+
+To reproduce our SST2 results, run:
+
+```bash
+sh script_sst2_llama321b-instruct.sh
+```
+
+To reproduce our AGnews results, run:
+
+```bash
+sh script_ag_news_llama3.2-1B-instruct.sh
+```
+
+To reproduce our intervention generation results, run: 
+
+```bash
+sh script_sst2_llama321b-instruct_additional_metrics.sh
+```
+
+To run some example generations for SST2, run:
+
+```bash
+sh script_sst2_test_generation.sh
+```
+
+To run some example generations for AGnews, run:
+
+```bash
+sh script_ag_news_test_generation.sh
+```
+
+<br>
+
 ## References
 - https://github.com/Trustworthy-ML-Lab/CB-LLMs
