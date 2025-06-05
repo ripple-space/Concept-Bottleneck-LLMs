@@ -113,6 +113,23 @@ python print_concept_contributions.py --cbl_path mpnet_acs/SetFit_sst2/roberta_c
 ```
 This will generate 5 explanations for each sample in the dataset. Please change the argument `--cbl_path` accordingly if using other settings.
 
+### Plot Top activated neurons from final layer
+To get the top 5 activated neurons in CB-LLMs trained w/ ACC w/ Sparse FL in dataset SST2 (RoBERTa backbone), run
+```bash
+python visualize_neuron.py \
+--dataset SetFit/sst2 \
+--model roberta \
+--w_path mpnet_acs/SetFit_sst2/roberta_cbm/W_g_sparse_acc.pt \
+--b_path mpnet_acs/SetFit_sst2/roberta_cbm/b_g_sparse_acc.pt \
+--top_k 5 \
+--plot
+```
+This will store the sankey plot in `teams/dsmlp/CB-LLMs/classification/mpnet_acs/SetFit_sst2/roberta_plot`. Set the argument `--dataset ag_news` to switch the dataset. Please change the argument `--model`, `--w_path`, `--b-path`, and `--top_k` accordingly if using other settings. Add `--plot` to visualize and save the weights. For example,
+<p align="center">
+  <img src="./fig/sankey_top5_roberta_SetFit_sst2_W_g_sparse_acc.png" width="80%" height="80%" />
+</p>
+
+
 ## 🧪 Additional Experiments
 
 ### NEC (Number of Effective Concepts) Analysis
