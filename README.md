@@ -34,6 +34,8 @@ rm -rf temp_repo
 
 ---
 
+<br>
+
 ## 📊 Part I: CB-LLM (Classification)
 
 ###  Automatic Concept Scoring (ACS)
@@ -129,6 +131,7 @@ This will store the sankey plot in `/classification/mpnet_acs/SetFit_sst2/robert
   <img src="./fig/sankey_top5_roberta_SetFit_sst2_W_g_sparse_acc.png" width="80%" height="80%" />
 </p>
 
+<br>
 
 ## 🧪 Additional Experiments
 
@@ -174,4 +177,7 @@ python train_CBL_bce.py --automatic_concept_correction
 This will train the CBL using BCE with ACC for the SST2 dataset, and store the model under `mpnet_acs/SetFit_sst2/roberta_cbm/`. To disable Automatic Concept Correction, remove the given argument.
 After this, you can follow the step in 'Train the Final Predictor' above to get the weights, and run the 'Testing' to get the accuracy. 
 
-## Key Results
+<br>
+
+## References
+- https://github.com/Trustworthy-ML-Lab/CB-LLMs
