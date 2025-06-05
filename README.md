@@ -42,7 +42,7 @@ To generate concept scores for a dataset, run:
 python get_concept_labels.py
 ```
 
-This will generate the concept scores for the SST2 dataset using our predefined concept set, and store the scores under `mpnet_acs/SetFit_sst2/`. Set the argument `--dataset ag_news`, `--dataset yelp_polarity`, or `--dataset dbpedia_14` to switch the dataset.
+This will generate the concept scores for the SST2 dataset using our predefined concept set, and store the scores under `mpnet_acs/SetFit_sst2/`. Set the argument `--dataset ag_news` to switch the dataset.
 
 **Updates:**
 
@@ -56,7 +56,7 @@ To train the CBL, run
 python train_CBL.py --automatic_concept_correction
 ```
 
-This will train the CBL with Automatic Concept Correction for the SST2 dataset, and store the model under `mpnet_acs/SetFit_sst2/roberta_cbm/`. To disable Automatic Concept Correction, remove the given argument. Set the argument `--backbone gpt2` to switch the backbone from roberta to gpt2. Set the argument `--dataset ag_news`, `--dataset yelp_polarity`, or `--dataset dbpedia_14` to switch the dataset.
+This will train the CBL with Automatic Concept Correction for the SST2 dataset, and store the model under `mpnet_acs/SetFit_sst2/roberta_cbm/`. To disable Automatic Concept Correction, remove the given argument. Set the argument `--backbone gpt2` to switch the backbone from roberta to gpt2. Set the argument `--dataset ag_news` to switch the dataset.
 
 **Update:**
 Checkpoints are saved automatically to avoid losing progress if your connection breaks.
@@ -81,7 +81,7 @@ python finetune_black_box.py
 
 ```
 This will train the black-box (non-interpretable) model for the SST2 dataset, and store the model under `baseline_models/roberta/`.
-Set the argument `--backbone gpt2` to switch backbone or `--dataset ag_news`, `--dataset yelp_polarity`, or `--dataset dbpedia_14` to switch the dataset.
+Set the argument `--backbone gpt2` to switch backbone or `--dataset ag_news` to switch the dataset.
 
 **Update:**
 Reduced batch_size for large datasets and added checkpoints.
@@ -98,7 +98,7 @@ To test the accuracy of the baseline standard black-box model, run
 ```bash
 python test_black_box.py --model_path baseline_models/roberta/backbone_finetuned_sst2.pt
 ```
-Set the argument `--dataset yelp_polarity`, `--dataset ag_news`, or `--dataset dbpedia_14` to switch the dataset. Please change the argument `--model_path` accordingly if using other settings.
+Set the argument `--dataset ag_news` to switch the dataset. Please change the argument `--model_path` accordingly if using other settings.
 
 ### Generate Explanations from CB-LLM
 To visualize the neurons in CB-LLM (task 1 in our paper), run
@@ -154,7 +154,6 @@ Evaluates test accuracy at each NEC level for a given CB-LLM model.
 #### Test NEC accuracy for Black-box
 ```bash
 python test_black_box_nec.py --model_path baseline_models/roberta/backbone_finetuned_sst2.pt
-
 ```
 Evaluates NEC-constrained accuracy for black-box models, for comparison with CB-LLM.
 
@@ -162,7 +161,6 @@ Evaluates NEC-constrained accuracy for black-box models, for comparison with CB-
 To train CBL with BCE (Binary Cross Entropy), run
 ```bash
 python train_CBL_bce.py --automatic_concept_correction
-
 ```
 This will train the CBL using BCE with ACC for the SST2 dataset, and store the model under `mpnet_acs/SetFit_sst2/roberta_cbm/`. To disable Automatic Concept Correction, remove the given argument.
 After this, you can follow the step in 'Train the Final Predictor' above to get the weights, and run the 'Testing' to get the accuracy. 
