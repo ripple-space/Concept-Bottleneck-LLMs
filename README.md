@@ -141,7 +141,7 @@ python train_FL_nec.py --cbl_path mpnet_acs/SetFit_sst2/roberta_cbm/cbl_acc.pt
 This will train and evaluate the final predictor with different levels of sparsity (effective concepts), saving each configuration's weights and accuracy logs.
 **Details:**
 
-Uses `weight_truncation` in `utils.py` and updated `glm_saga` in `glm_saga/elasticnet.py`.
+Use `weight_truncation` in `utils.py` and updated `glm_saga` in `glm_saga/elasticnet.py`.
 Trains and saves model at `measure_level = (5, 10, ... 100)` effective concepts.
 Stores results under `.../<backbone>_nec/`.
 
