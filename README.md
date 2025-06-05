@@ -124,7 +124,7 @@ python visualize_neuron.py \
 --top_k 5 \
 --plot
 ```
-This will store the sankey plot in `teams/dsmlp/CB-LLMs/classification/mpnet_acs/SetFit_sst2/roberta_plot`. Set the argument `--dataset ag_news` to switch the dataset. Please change the argument `--model`, `--w_path`, `--b-path`, and `--top_k` accordingly if using other settings. Add `--plot` to visualize and save the weights. For example,
+This will store the sankey plot in `/classification/mpnet_acs/SetFit_sst2/roberta_plot`. Set the argument `--dataset ag_news` to switch the dataset. Please change the argument `--model`, `--w_path`, `--b-path`, and `--top_k` accordingly if using other settings. Add `--plot` to visualize and save the weights. For example,
 <p align="center">
   <img src="./fig/sankey_top5_roberta_SetFit_sst2_W_g_sparse_acc.png" width="80%" height="80%" />
 </p>
