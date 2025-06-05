@@ -158,4 +158,13 @@ python test_black_box_nec.py --model_path baseline_models/roberta/backbone_finet
 ```
 Evaluates NEC-constrained accuracy for black-box models, for comparison with CB-LLM.
 
+### BCE-trained Concept Bottleneck Layer
+To train CBL with BCE (Binary Cross Entropy), run
+```bash
+python train_CBL_bce.py --automatic_concept_correction
+
+```
+This will train the CBL using BCE with ACC for the SST2 dataset, and store the model under mpnet_acs/SetFit_sst2/roberta_cbm/. To disable Automatic Concept Correction, remove the given argument.
+After this, you can follow the step in 'Train the Final Predictor' above to get the weights, and run the test to get the accuracy. 
+
 ## Key Results
